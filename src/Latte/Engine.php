@@ -306,7 +306,7 @@ class Engine
 			throw new RuntimeException("Unable to create directory '$dir'. " . error_get_last()['message']);
 		}
 
-		$handle = @fopen($file, 'c+'); // @ is escalated to exception
+		$handle = @fopen($file, 'w'); // @ is escalated to exception
 		if (!$handle) {
 			throw new RuntimeException("Unable to create file '$file'. " . error_get_last()['message']);
 		} elseif (!@flock($handle, $mode)) { // @ is escalated to exception
