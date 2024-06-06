@@ -49,6 +49,8 @@ class Engine
 	private ?Policy $policy = null;
 	private bool $sandboxed = false;
 	private ?string $phpBinary = null;
+	private ?string $phpHeader = null;
+        private ?string $namespace = null;
 	private ?string $cacheKey;
 	private ?string $locale = null;
 
@@ -86,6 +88,10 @@ class Engine
 		return $template->capture(fn() => $template->render($block));
 	}
 
+	public function setFileHeader(string $header){ $this->phpHeader = $header; }
+
+        public function setNamespace(string $namespace) { $this->namespace = $namespace; }
+
 
 	/**
 	 * Creates template object.
@@ -100,6 +106,10 @@ class Engine
 		}
 
 		$this->providers->fn = $this->functions;
+
+		$namespace = $this->namespace;
+                $class = $namespace ? "$namespace\\$class" : $class;
+		
 		return new $class(
 			$this,
 			$params,
@@ -137,6 +147,14 @@ class Engine
 		if ($this->phpBinary) {
 			Compiler\PhpHelpers::checkCode($this->phpBinary, $compiled, "(compiled $name)");
 		}
+
+		$compiled = str_replace(" Latte\\", " \\Latte\\", $compiled);
+
+                $top = [];
+                if($this->phpHeader){$top[] = $this->phpHeader;}
+                if($this->namespace){$top[] = "namespace " . $this->namespace . ";";}
+
+                $compiled = str_replace("<?php", "<?php\n\n\n//\n// DOCO CUSOTM HEADERS\n//\n" . implode("\n", $top) . "\n\n", $compiled);
 
 		return $compiled;
 	}
